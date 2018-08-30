@@ -2,8 +2,8 @@
 #define 	F_CPU   16000000UL
 #endif
 
-/* able to save 1kb/8b keys */ 
-#define NUMBER_OF_KEYS 20
+/* able to save 128 keys */ 
+#define NUMBER_OF_KEYS 36
 
 /* bytes in read and write buffers */
 #define BUFFER_LEN (65)
@@ -65,7 +65,7 @@ struct handler{
 };
 
 struct handler hndl_add_arr[] = {{"q", "0"}, {"w", "1"}, {"e", "2"}, {"r", "3"}, {"t", "4"} , {"y", "5"},
-			         {"u", "6"}, {"i", "7"}, {"o", "8"}, {"p", "9"}, {"[", "10"},{"]", "11"},
+			         {"u", "6"}, {"i", "7"}, {"o", "8"}, {"p", "9"}, {"POP", "10"},{"KA", "11"},
 		                 {"a", "12"},{"s", "13"},{"d", "14"},{"f", "15"},{"g", "16"},{"h", "17"},
  	 	 	         {"j", "18"},{"k", "19"},{"l", "20"},{";", "21"},{"'", "22"},{"z", "23"},
  	 	 	         {"x", "24"},{"c", "25"},{"v", "26"},{"b", "27"},{"n", "28"},{"m", "29"},
@@ -75,7 +75,7 @@ struct handler hndl_add_arr[] = {{"q", "0"}, {"w", "1"}, {"e", "2"}, {"r", "3"},
  	 	 	         {"J", "48"},{"K", "49"},{"L", "50"},{"Z", "51"},{"X", "52"},{"C", "53"},
  	 	 	         {"V", "54"},{"B", "55"},{"N", "56"},{"M", "57"},{"~", "58"},{"!", "59"}
  	 	 	       };
-struct handler hndl_del_arr[] = {{"-q", "-0"}, {"-w", "-1"}, {"-e", "-2"}, {"-r", "-3"}, {"-t", "-4"} , {"-y", "-5"},
+struct handler hndl_del_arr[] = {{"-q", "none"}, {"-w", "-1"}, {"-e", "-2"}, {"-r", "-3"}, {"-t", "-4"} , {"-y", "-5"},
 			         {"-u", "-6"}, {"-i", "-7"}, {"-o", "-8"}, {"-p", "-9"}, {"-[", "-10"},{"-]", "-11"},
 		                 {"-a", "-12"},{"-s", "-13"},{"-d", "-14"},{"-f", "-15"},{"-g", "-16"},{"-h", "-17"},
  	 	 	         {"-j", "-18"},{"-k", "-19"},{"-l", "-20"},{"-;", "-21"},{"-'", "-22"},{"-z", "-23"},
@@ -113,57 +113,43 @@ int main()
 	uint8_t ibutton_id[8];
 	uint8_t crc;
 	
-	char temp[] = "";
-	char hash_str[41];
+	char hash_str[32];
 	uint8_t access_flag;
 	uint8_t id_msg[7];
 	uint8_t hash[20];
 	while (1) {
-	
 	 	err = ow_cmd_readrom(&pin, ibutton_id, &crc, true, false);
 		
-		switch(err){
-		case(OW_EOK):
-		    for(uint8_t key_count_r = 0;key_count_r < NUMBER_OF_KEYS;key_count_r++){
-
-		 	 access_flag = (true == search_id(ibutton_id,crc,key_count_r)) ? 0xFF : 0xF;
-
-			    switch(access_flag){	
-				case(0xFF):
-				 PORTB &= ~OK;
-				 PORTB |= ERROR;
-
-				 id_msg[0] = crc;
-				 for(int i = 0,j = 1; i < 6; ++i,j++)
+		if(OW_EOK == err){
+			for(uint8_t key_count_r = 0;key_count_r < NUMBER_OF_KEYS;key_count_r++){
+				access_flag = (true == search_id(ibutton_id,crc,key_count_r)) ? 0xFF : 0xF;
+				if(access_flag == 0xFF){
+					PORTB &= ~OK;
+					PORTB |= ERROR;
+					id_msg[0] = crc;
+					for(int i=0,j=1;i<6;++i,j++)
 					id_msg[j] = ibutton_id[i];
-
-				  /* only 7 bytes of the button id */
-				 hmac_sha256(hash,key,160,id_msg,56);
-
-				 int byte;
-				 for(byte = 0;byte < 32; ++byte)
-					sprintf(&hash_str[byte*2], "%02x", hash[byte]);
-
+					/* only 7 bytes of the button id */
+					hmac_sha256(hash,key,160,id_msg,56);
+					for(int byte =0;byte<32;++byte)
+						sprintf(&hash_str[byte*2], "%02x", hash[byte]);
 					uart_put(hash_str);
 					uart_put("\n\n");
-				 default:
-				  break;
-			   }
-		      }
-		  break;
-		
-		  default:
-			 PORTB |= OK;
-			 PORTB &= ~ERROR;
-			 break;
+					break;
+				}  
+			} 
+		}else{
+			access_flag = 0xFF;
+			PORTB |= OK;
+			PORTB &= ~ERROR;
 		}
-
-		/*--------------------------------------------------------------------------------------------*/
+	
+		/*******************************************************************************/
 
 		if (atomic_str_eq(rdbuff, "la")){
 
 			uint8_t id_bowl[8],*id_which_read;
-
+			char temp[] = "";
 			uart_put("\n\n");
 			//uart_put("iButton Database\n");
 			for(uint8_t key_count_r = 0;key_count_r < NUMBER_OF_KEYS;key_count_r++){
@@ -175,7 +161,7 @@ int main()
 
 				id_which_read = read_from_cell(key_count_r,id_bowl);
 			
-				for(uint8_t i = 0;i < 8;i++){
+				for(uint8_t i = 0;i < 7;i++){
 
 					sprintf(&hash_str[i*2], "%02x", hash[i]);
 					itoa(id_which_read[i],temp,16);
@@ -186,34 +172,37 @@ int main()
 				uart_put("|------------------------------ |\n");
 			}
 			  _delay_ms(50);
+			/* clean serial buffer */
+			rdbuff[0] = '\0';
 		}
-
 		/* if you are lazy you should push "cla" (clean all) for database cleaning:) */
 
 		if (atomic_str_eq(rdbuff, "cla")){
-		  clean_all_cells(NUMBER_OF_KEYS);
-		  uart_put("\n\nAll keys have been deleted\n\n");
-		  _delay_ms(50);
+			clean_all_cells(NUMBER_OF_KEYS);
+			uart_put("\n\nAll keys have been deleted\n\n");
+			_delay_ms(50);
+			/* clean serial buffer */
+			rdbuff[0] = '\0';
 		}
 
-		/*--------------------------------------------------------------------------------------------*/
+		/*******************************************************************************/
 
 		/* interface for deleting and adding keys to database -> Push: "-q"->[0] "-w"->[1] "-e"->[2] ..... "-p"->[9] */
 
-	    	if(err == OW_EOK)
+	    	if(0xF == access_flag)
+			for(int selection = 0;selection < NUMBER_OF_KEYS; selection++){
+				
+				/* is key already exist -> deny to write*/
+			 	 choose_key(rdbuff, hndl_add_arr[selection].key_f, hndl_add_arr[selection].key_alter){ /* if N-key has been pressed -> put in */
+					put_in_cell(ibutton_id,crc,selection);
+					_delay_ms(10);
+					uart_put("\n");
+					uart_put("\nKEY has been added\n");
+					uart_put("\n");
+					_delay_ms(50);
+				 }
+			}
 		for(int selection = 0;selection < NUMBER_OF_KEYS; selection++){
-			
-			/* is key already exist -> deny to write*/
-			if(access_flag == 0xF)
-		 	 choose_key(rdbuff, hndl_add_arr[selection].key_f, hndl_add_arr[selection].key_alter){ /* if N-key has been pressed -> put in */
-				put_in_cell(ibutton_id,crc,selection);
-				_delay_ms(10);
-				uart_put("\n");
-				uart_put("\nKEY has been added\n");
-				uart_put("\n");
-				_delay_ms(50);
-			 }
-
 			 choose_key(rdbuff, hndl_del_arr[selection].key_f, hndl_del_arr[selection].key_alter){
 				clean_cell(selection);
 				_delay_ms(10);
@@ -222,6 +211,8 @@ int main()
 				uart_put("\n");
 				_delay_ms(50);
 	 	         }
+			/* clean serial buffer */
+			rdbuff[0] = '\0';
 		}
 	}	
 }

@@ -1,7 +1,7 @@
 TARGET:=lock
 DEPS:=onewire _eeprom uart hmac-sha256 sha256
 MCU:=atmega328p			# see avr-as --help for full list
-PROGPORT:=/dev/ttyUSB1	# see ls /dev | grep tty and 99-Arduino.rules
+PROGPORT:=/dev/ttyUSB0	# see ls /dev | grep tty and 99-Arduino.rules
 
 CC=avr-gcc
 CFLAGS=-mmcu=$(MCU) -Os -Wall -Wextra -Wpedantic -Waddr-space-convert -Wmisspelled-isr -save-temps #-Werror  -save-temps

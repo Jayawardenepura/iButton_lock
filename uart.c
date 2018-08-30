@@ -32,8 +32,10 @@ ISR(USART_RX_vect, ISR_BLOCK)
 		rdind++;
 	}
 
+	/*
 	if (rdind >= BUFFER_LEN)
 		rdind = 0;
+	*/
 }
 
 
@@ -95,6 +97,8 @@ void uart_put(char *str)
 		}
 		wrind = 0;
 		txcflag = false; /* programmatic transfer complete flag */
+		/* clean buffer */
+		//wrbuff[0] = '\0';
 		/* Enable transmitter interrupts */
 		UCSR0B |= (1 << TXCIE0) | (1 << UDRIE0);
 	}
