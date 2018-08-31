@@ -14,30 +14,51 @@ EEPROM utilization and organization structure:
 - .
 - [9] - p
 
-**(0)(crc)(family code)(serial number)**
+```(0)(crc)(family code)(serial number)```
+
+Pay attention:Are saved only 5 bytes of the serial number!
+
+You can define size of the keys database in lock.c:
+```#define NUMBER_OF_KEYS 36```
 
 USART Settings: 19200,even,2
 
-The keys q,w,e,r,t,y are used to select one of 6 cells as current for further operations (replace, remove),which also could be imitated with the COM-terminal:
+The keys q,w,e,r,t,y.. are used to select one of 6 cells as current for further operations (replace, remove),which also could be imitated with the COM-terminal:
 To write a new key to the EEPROM, use:
 
-- q,w,e,r,t,y,u,i,o,p
-- 0,1,2,3,4,5,6,7,8,9
+- q,w,e,r,t,y,u,i,o,p..
+- 0,1,2,3,4,5,6,7,8,9..
 
 ## For deletion of a key from the EEPROM index, use:
-
-- -q,-w,-e-,-r,-t,-y,-u,-i,-o,-p
-- -0,-1,-2,-3,-4,-5,-6,-7,-8,-9
-
+```
+- -q,-w,-e-,-r,-t,-y,-u,-i,-o,-p..
+- -0,-1,-2,-3,-4,-5,-6,-7,-8,-9..
+```
 ## To delete all the keys from EEPROM use:
-
-- a
-
+```
+- cla(clean all)
+```
 ## To read all keys stored in EEPROM, use:
-
-- k
-
+```
+- la(list all)
+```
 It is possible to store up to 1024 8-byte keys in EEPROM (specified via define constant)
+
+Has been envisaged the protection from needless memory recleanings and recreating.
+
+The results of the ACCESS GRANTED and ACCESS DENIAL are accompanied by led blinking.
+
+Moreover ACCESS GRANTED is accompanied by uart output,which shows HMAC-256 from ibutton id and the key below(You can give yours):
+
+```
+uint8_t key[] = {
+  0x3d, 0xc6, 0xca, 0xa4, 0x82, 0x4a, 0x6d, 0x28,
+  0x87, 0x67, 0xb2, 0x33, 0x1e, 0x20, 0xb4, 0x31,
+  0x66, 0xcb, 0x85, 0xd9 
+};
+```
+It need to work wish serial applications, for example:
+```https://github.com/Jayawardenepura/iButton-PAM-module```
 
 ## Pinout
 
@@ -51,8 +72,8 @@ It is possible to store up to 1024 8-byte keys in EEPROM (specified via define c
 ## Flash
 
 In case of using MCU other than AtMega328p, change the MCU constant in project Makefile). Build steps:
-
+```
 - make clean hex
 - make flash
-
+```
 ## 1-Wire library has been developed in C/Embedded BaseCamp Course
