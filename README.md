@@ -57,8 +57,7 @@ uint8_t key[] = {
   0x66, 0xcb, 0x85, 0xd9 
 };
 ```
-It need to work wish serial applications, for example:
-```(https://github.com/Jayawardenepura/iButton-PAM-module)```
+It need to work wish serial applications, for example: https://github.com/Jayawardenepura/iButton-PAM-module
 
 ## Pinout
 
