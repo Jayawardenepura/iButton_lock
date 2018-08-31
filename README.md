@@ -21,7 +21,7 @@ Pay attention:Are saved only 5 bytes of the serial number!
 You can define size of the keys database in lock.c:
 ```#define NUMBER_OF_KEYS 36```
 
-USART Settings: 19200,even,2
+```USART Settings: 19200,even,2```
 
 The keys q,w,e,r,t,y.. are used to select one of 6 cells as current for further operations (replace, remove),which also could be imitated with the COM-terminal:
 To write a new key to the EEPROM, use:
@@ -58,7 +58,7 @@ uint8_t key[] = {
 };
 ```
 It need to work wish serial applications, for example:
-```https://github.com/Jayawardenepura/iButton-PAM-module```
+```(https://github.com/Jayawardenepura/iButton-PAM-module)```
 
 ## Pinout
 
