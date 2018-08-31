@@ -14,25 +14,25 @@ EEPROM utilization and organization structure:
 - .
 - [9] - p
 
-```(0)(crc)(family code)(serial number)```
+```(crc)(family code)(serial number) in HEX```
 
 Pay attention:Are saved only 5 bytes of the serial number!
 
-You can define size of the keys database in lock.c:
+You can define size of the keys database in the lock.c:
 ```#define NUMBER_OF_KEYS 36```
 
 ```USART Settings: 19200,even,2```
 
 The keys q,w,e,r,t,y.. are used to select one of 6 cells as current for further operations (replace, remove),which also could be imitated with the COM-terminal:
 To write a new key to the EEPROM, use:
-
-- q,w,e,r,t,y,u,i,o,p..
-- 0,1,2,3,4,5,6,7,8,9..
-
+```
+q,w,e,r,t,y,u,i,o,p..
+0,1,2,3,4,5,6,7,8,9..
+```
 ## For deletion of a key from the EEPROM index, use:
 ```
-- -q,-w,-e-,-r,-t,-y,-u,-i,-o,-p..
-- -0,-1,-2,-3,-4,-5,-6,-7,-8,-9..
+-q,-w,-e-,-r,-t,-y,-u,-i,-o,-p..
+-1,-2,-3,-4,-5,-6,-7,-8,-9,-10..
 ```
 ## To delete all the keys from EEPROM use:
 ```
@@ -72,7 +72,7 @@ It need to work wish serial applications, for example: https://github.com/Jayawa
 
 In case of using MCU other than AtMega328p, change the MCU constant in project Makefile). Build steps:
 ```
-- make clean hex
-- make flash
+$make clean hex
+$make flash
 ```
 ## 1-Wire library has been developed in C/Embedded BaseCamp Course
