@@ -75,4 +75,4 @@ In case of using MCU other than AtMega328p, change the MCU constant in project M
 $make clean hex
 $make flash
 ```
-## 1-Wire library has been developed in C/Embedded BaseCamp Course
+## 1-Wire library has been developed in Global Logic C/Embedded BaseCamp Course
